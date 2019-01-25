@@ -1,4 +1,5 @@
 ﻿#region Test1
+
 //using System;
 
 //namespace Twitter_Snowflake
@@ -15,6 +16,7 @@
 //        }
 //    }
 //} 
+
 #endregion
 
 using System;
@@ -24,30 +26,31 @@ using System.Threading.Tasks;
 
 namespace Snowflake
 {
-    class Program
+    static class Program
     {
         private static int N = 10000;
         private static readonly HashSet<long> Set = new HashSet<long>();
         private static readonly Snowflake Worker = new Snowflake(1, 1);
         private static int _taskCount;
 
-        static void Main(string[] args)
+        static void Main()
         {
-            Task.Run(() => GetId());
-            Task.Run(() => GetId());
-            Task.Run(() => GetId());
+            Task.Run(() => GetId(N));
+            Task.Run(() => GetId(N));
+            Task.Run(() => GetId(N));
 
-            Task.Run(() => Printf());
+            Task.Run(() => Printf("..."));
             Console.ReadKey();
         }
 
-        private static void Printf()
+        private static void Printf(string str)
         {
             while (_taskCount != 3)
             {
-                Console.WriteLine("...");
+                Console.WriteLine(str);
                 Thread.Sleep(1000);
             }
+
             lock (O)
             {
                 Console.WriteLine(Set.Count == N * _taskCount);
@@ -55,9 +58,10 @@ namespace Snowflake
         }
 
         private static readonly object O = new object();
-        private static void GetId()
+
+        private static void GetId(int n)
         {
-            for (var i = 0; i < N; i++)
+            for (var i = 0; i < n; i++)
             {
                 var id = Worker.GetId();
 
@@ -72,11 +76,11 @@ namespace Snowflake
                         Set.Add(id);
                     }
                 }
-
             }
+
             lock (O)
             {
-                Console.WriteLine($"任务{++_taskCount}完成");
+                Console.WriteLine($"任务{++_taskCount}完成:" + Set.Count);
             }
         }
     }
